@@ -115,12 +115,20 @@ def create_table(instances):
             table.loc[i, context] += 1
         i +=1
     
+    """
+    I tried to order the columns in many ways but by simply appending
+    a column in the first position or uniting two dataframes, for some reason,
+    didn't work. The only way that it worked was by rearranging the columns after.
+    The problem is, though, that in the main matrix it doesn't appear as the
+    first column position.
+    """
     # new_order = ['class'] + vocabulary
     # table = table.reindex(new_order, axis=1)
 
+    ## https://jakevdp.github.io/PythonDataScienceHandbook/03.02-data-indexing-and-selection.html
     table['class'] = classes
-    cols = list(table.columns.values)
-    table = table[[cols[-1]]+cols[0:-2]]
+    cs = list(table.columns.values)
+    table = table[[cs[-1]]+cs[0:-2]]
 
     # table.insert(0, "class", classes, True) 
 
