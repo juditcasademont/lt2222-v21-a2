@@ -31,15 +31,16 @@ def preprocess(inputfile):
     rows = []
     line = [x.strip().split('\t') for x in inputfile.readlines()[1:]]
     for l in line:
-        if l[3] not in verbs:
-            if l[2] not in string.punctuation:
-                l[2] = lemmatizer.lemmatize(l[2].lower())
+        if l[3].isalpha():
+            if l[3] not in verbs:
+                if l[2] not in string.punctuation:
+                    l[2] = lemmatizer.lemmatize(l[2].lower())
+                    rows.append(l)
+            else:
+                l[2] = wn._morphy(l[2].lower(), pos = 'v')
+                lemmatized = str(l[2]).strip("['").strip("']")
+                l[2] = lemmatized
                 rows.append(l)
-        else:
-            l[2] = wn._morphy(l[2].lower(), pos = 'v')
-            lemmatized = str(l[2]).strip("['").strip("']")
-            l[2] = lemmatized
-            rows.append(l)
 
     cols = ["word nº", "sentence nº", "word", "POS tag", "entity type"]
 
@@ -66,30 +67,32 @@ def create_instances(data):
 
     sent_word_ent = list(zip(sent_num, word, ent_typ))
 
-    for tup in sent_word_ent:
+    for index, tup in enumerate(sent_word_ent):
         if 'B-' in tup[2]: #If it has a tag with B-
             neclass = re.sub('B-', '', tup[2])
             features = []
             start_token = '<start>'
             end_token = '<end>'
             befores = []
-            for c_before in range((sent_word_ent.index(tup) - 6),(sent_word_ent.index(tup) - 1)): #The 5 features before the word with a NE
-                if sent_word_ent[c_before][0] == tup[0]: #If they belong in the same sentence
-                    befores.append(sent_word_ent[c_before][1]) #Append the word
+            for i in range(-6, -1): #The 5 features before the word with a NE
+                if sent_word_ent[index+i][0] == tup[0]: #If they belong in the same sentence
+                    befores.append(sent_word_ent[index+i][1]) #Append the word
                 else:
                     befores.append(start_token)
             features = features + befores
             afters = []
-            i = 1
-            j = 6
-            if (sent_word_ent.index(tup) + j) < len(sent_word_ent):
-                for c_after in range((sent_word_ent.index(tup) + i),(sent_word_ent.index(tup) + j)):
-                    if sent_word_ent[c_after][0] == tup[0]:
-                        afters.append(sent_word_ent[c_after][1])
+            c = 1
+            while sent_word_ent[index+c][2].startswith('I'):
+                c += 1
+            l = 1 + c
+            k = 6 + c
+            if (index + k) < len(sent_word_ent):
+                for j in range(l,k):
+                    if sent_word_ent[index+j][0] == tup[0]:
+                        afters.append(sent_word_ent[index+j][1])
                     else:
                         afters.append(end_token)
             features = features + afters
-
             instances.append(Instance(neclass, features))
     return instances
 
