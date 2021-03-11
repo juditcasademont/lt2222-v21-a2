@@ -186,11 +186,6 @@ def ttsplit(bigdf):
 
 # Code for part 5
 def confusion_matrix(truth, predictions):
-    
-    # types = ['art', 'eve', 'geo', 'gpe', 'nat', 'org', 'per', 'tim']
-    # confusion = pd.DataFrame(confusion_matrix(truth, predictions, labels = types))
-    # confusion.columns = types
-    # confusion.index = types
 
     classes = ['art', 'eve', 'geo', 'gpe', 'nat', 'org', 'per', 'tim']
     confusion = pd.DataFrame(c_m(truth, predictions, labels = classes))
